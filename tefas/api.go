@@ -63,14 +63,14 @@ func (a *Api) getFundData(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	// Force the server to close the connection after this response
+	// Tell the client we're closing the connection after this response
 	resp := c.Response()
 	resp.Header().Set("Connection", "close")
 
 	format := c.QueryParam("format")
 	if format == "csv" {
 		// Explicitly set CSV content type
-		resp.Header().Set(echo.HeaderContentType, echo.MIMETextCSV)
+		resp.Header().Set(echo.HeaderContentType, "text/csv")
 		csvString, err := scraper.PriceRecordstoCsv(records)
 		if err != nil {
 			return err
@@ -78,6 +78,7 @@ func (a *Api) getFundData(c echo.Context) error {
 		return c.String(http.StatusOK, csvString)
 	}
 
+	// Default to JSON
 	return c.JSON(http.StatusOK, &scraper.ApiResponse{
 		Message: "ok",
 		Data:    records,
